@@ -102,6 +102,26 @@ def main():
 
      ############### Step 4 Training a Logistic Regression Classifier ##########
      # Start you Code here #
+    if classifier == 'Logistice Regression':
+         st.sidebar.subheader("Model Hyperparameters")
+         C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='C_logistic')
+
+         metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
+
+    if st.sidebar.button("Classify", key='classify_logistic'):
+        st.subheader("Logistic Regression results")
+        model = LogisticRegression(C=C, max_iter=1000)  # เพิ่ม max_iter เพื่อให้แน่ใจว่า convergence
+        model.fit(x_train, y_train)
+        accuracy = model.score(x_test, y_test)
+        y_pred = model.predict(x_test)
+
+        precision = precision_score(y_test, y_pred).round(2)
+        recall = recall_score(y_test, y_pred).round(2)
+
+        st.write("Accuracy: ", round(accuracy, 2))
+        st.write("Precision: ", precision)
+        st.write("Recall: ", recall)
+        plot_metrics(metrics)
 
 
 
@@ -111,6 +131,27 @@ def main():
 
      ############### Step 5 Training a Random Forest Classifier ##########
     # Start you Code here #
+    if classifier == 'Random Forest':
+         st.sidebar.subheader("Model Hyperparameters")
+         n_estimators = st.sidebar.number_input("Number of Trees", 10, 200, step=10, key='n_estimators')
+         max_depth = st.sidebar.number_input("Max Depth", 1, 20, step=1, key='max_depth')
+
+    metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
+
+    if st.sidebar.button("Classify", key='classify_random_forest'):
+        st.subheader("Random Forest results")
+        model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=0)
+        model.fit(x_train, y_train)
+        accuracy = model.score(x_test, y_test)
+        y_pred = model.predict(x_test)
+
+        precision = precision_score(y_test, y_pred).round(2)
+        recall = recall_score(y_test, y_pred).round(2)
+
+        st.write("Accuracy: ", round(accuracy, 2))
+        st.write("Precision: ", precision)
+        st.write("Recall: ", recall)
+        plot_metrics(metrics)
 
 
 
