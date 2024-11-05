@@ -42,18 +42,14 @@ def main():
         x_train, x_test, y_train, y_test = train_test_split(x,y,test_size=0.3, random_state=0)
         return x_train, x_test, y_train, y_test
     
-    def plot_metrics(metrics_list):
+    def plot_metrics(metrics_list, model, x_test, y_test, class_names):
         if 'Confusion Matrix' in metrics_list:
-            
             st.subheader("Confusion Matrix")
             fig, ax = plt.subplots()
             ConfusionMatrixDisplay.from_estimator(model, x_test, y_test, ax=ax, display_labels=class_names)
             st.pyplot(fig)
-    
-            
         
         if 'ROC Curve' in metrics_list:
-            
             st.subheader("ROC Curve")
             fig, ax = plt.subplots()
             RocCurveDisplay.from_estimator(model, x_test, y_test, ax=ax)
@@ -69,7 +65,7 @@ def main():
     x_train, x_test, y_train, y_test = spliting_data(df)
     class_names = ['edible','poisonous']
     st.sidebar.subheader("Choose Classifiers")
-    classifier  = st.sidebar.selectbox("Classifier", ("Support Vectore Machine (SVM)", "Logistice Regression", "Random Forest"))
+    classifier  = st.sidebar.selectbox("Classifier", ("Support Vectore Machine (SVM)", "Logistic Regression", "Random Forest"))
 
 
      ############### Step 3 Train a SVM Classifier ##########
@@ -95,80 +91,63 @@ def main():
             st.write("Accuracy: ", round(accuracy, 2))
             st.write("Precision: ", precision)
             st.write("Recall: ", recall)
-            plot_metrics(metrics)
+            plot_metrics(metrics, model, x_test, y_test, class_names)
+
+
 
 
     
 
      ############### Step 4 Training a Logistic Regression Classifier ##########
      # Start you Code here #
-    if classifier == 'Logistice Regression':
-         st.sidebar.subheader("Model Hyperparameters")
-         C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='C_logistic')
+    if classifier == 'Logistic Regression':
+        st.sidebar.subheader("Model Hyperparameters")
+        C = st.sidebar.number_input("C (Regularization parameter)", 0.01, 10.0, step=0.01, key='logistic_C')
+        metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
 
-         metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
+        if st.sidebar.button("Classify", key='classify'):
+            st.subheader("Logistic Regression results")
+            model = LogisticRegression(C=C, max_iter=200)
+            model.fit(x_train, y_train)
+            accuracy = model.score(x_test, y_test)
+            y_pred = model.predict(x_test)
 
-    if st.sidebar.button("Classify", key='classify_logistic'):
-        st.subheader("Logistic Regression results")
-        model = LogisticRegression(C=C, max_iter=1000)  # เพิ่ม max_iter เพื่อให้แน่ใจว่า convergence
-        model.fit(x_train, y_train)
-        accuracy = model.score(x_test, y_test)
-        y_pred = model.predict(x_test)
-
-        precision = precision_score(y_test, y_pred).round(2)
-        recall = recall_score(y_test, y_pred).round(2)
-
-        st.write("Accuracy: ", round(accuracy, 2))
-        st.write("Precision: ", precision)
-        st.write("Recall: ", recall)
-        plot_metrics(metrics)
-
-
-
-
-
+            precision = precision_score(y_test, y_pred).round(2)
+            recall = recall_score(y_test, y_pred).round(2)
+            
+            st.write("Accuracy: ", round(accuracy, 2))
+            st.write("Precision: ", precision)
+            st.write("Recall: ", recall)
+            plot_metrics(metrics, model, x_test, y_test, class_names)
 
 
      ############### Step 5 Training a Random Forest Classifier ##########
     # Start you Code here #
     if classifier == 'Random Forest':
-         st.sidebar.subheader("Model Hyperparameters")
-         n_estimators = st.sidebar.number_input("Number of Trees", 10, 200, step=10, key='n_estimators')
-         max_depth = st.sidebar.number_input("Max Depth", 1, 20, step=1, key='max_depth')
+        st.sidebar.subheader("Model Hyperparameters")
+        n_estimators = st.sidebar.number_input("Number of trees", 1, 500, step=1, key='n_estimators')
+        max_depth = st.sidebar.number_input("Max depth of tree", 1, 50, step=1, key='max_depth')
+        metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
 
-    metrics = st.sidebar.multiselect("What metrics to plot?", ("Confusion Matrix", "ROC Curve", "Precision-Recall Curve"))
+        if st.sidebar.button("Classify", key='classify'):
+            st.subheader("Random Forest results")
+            model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=0)
+            model.fit(x_train, y_train)
+            accuracy = model.score(x_test, y_test)
+            y_pred = model.predict(x_test)
 
-    if st.sidebar.button("Classify", key='classify_random_forest'):
-        st.subheader("Random Forest results")
-        model = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth, random_state=0)
-        model.fit(x_train, y_train)
-        accuracy = model.score(x_test, y_test)
-        y_pred = model.predict(x_test)
-
-        precision = precision_score(y_test, y_pred).round(2)
-        recall = recall_score(y_test, y_pred).round(2)
-
-        st.write("Accuracy: ", round(accuracy, 2))
-        st.write("Precision: ", precision)
-        st.write("Recall: ", recall)
-        plot_metrics(metrics)
-
-
-
-
-
-
-
+            precision = precision_score(y_test, y_pred).round(2)
+            recall = recall_score(y_test, y_pred).round(2)
+            
+            st.write("Accuracy: ", round(accuracy, 2))
+            st.write("Precision: ", precision)
+            st.write("Recall: ", recall)
+            plot_metrics(metrics, model, x_test, y_test, class_names)
 
     if st.sidebar.checkbox("Show raw data", False):
-        st.subheader("Mushroom dataset")
+        st.subheader("Mushroom Dataset")
         st.write(df)
-
     
-    
-    
-
-
 
 
 if __name__ == '__main__':
